@@ -11,11 +11,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "@types/color-thief-node": "^1.0.4",
     "clsx": "^2.1.1",
+    "color-thief-react": "^2.1.0",
     "framer-motion": "^12.42.2",
     "html2canvas": "^1.4.1",
     "lucide-react": "^1.23.0",
-    "node-vibrant": "^4.0.4",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hot-toast": "^2.6.0",
