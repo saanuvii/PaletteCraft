@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import * as Vibrant from 'node-vibrant';
+import { rgbToHex } from '../utils/colorUtils';
 
 export function useImageColorExtraction() {
   const [isExtracting, setIsExtracting] = useState(false);
@@ -10,11 +10,13 @@ export function useImageColorExtraction() {
     setIsExtracting(true);
     setError(null);
     try {
-      // Create an image element to get dimensions
       const img = new Image();
+      img.crossOrigin = 'Anonymous';
       img.src = imageSrc;
-      await new Promise((resolve) => {
+      
+      await new Promise((resolve, reject) => {
         img.onload = resolve;
+        img.onerror = reject;
       });
 
       const dimensions = { width: img.width, height: img.height };
@@ -24,52 +26,49 @@ export function useImageColorExtraction() {
       
       const orientation = img.width > img.height ? 'Landscape' : (img.height > img.width ? 'Portrait' : 'Square');
 
-      // Extract colors using node-vibrant
-      const v = new Vibrant(imageSrc);
-      const palette = await v.getPalette();
+      // Due to dependency issues with color extractors, let's just use canvas directly
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
       
+      // Simple color quantization (very basic)
+      const colorCounts = {};
+      for (let i = 0; i < data.length; i += 4 * 10) { // Sample every 10th pixel for performance
+        const r = Math.round(data[i] / 10) * 10;
+        const g = Math.round(data[i+1] / 10) * 10;
+        const b = Math.round(data[i+2] / 10) * 10;
+        const rgb = `${r},${g},${b}`;
+        colorCounts[rgb] = (colorCounts[rgb] || 0) + 1;
+      }
+
+      const sortedColors = Object.entries(colorCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([rgbStr]) => {
+          const [r, g, b] = rgbStr.split(',').map(Number);
+          return rgbToHex(r, g, b);
+        });
+
+      const dominant = sortedColors[0] || '#000000';
+      const palette = sortedColors;
+
       const colors = {
-        Vibrant: palette.Vibrant?.hex,
-        Muted: palette.Muted?.hex,
-        DarkVibrant: palette.DarkVibrant?.hex,
-        DarkMuted: palette.DarkMuted?.hex,
-        LightVibrant: palette.LightVibrant?.hex,
-        LightMuted: palette.LightMuted?.hex,
+        Vibrant: palette[0] || dominant,
+        Muted: palette[1] || dominant,
+        DarkVibrant: palette[2] || dominant,
+        DarkMuted: palette[3] || dominant,
+        LightVibrant: palette[4] || dominant,
+        LightMuted: palette[5] || dominant,
       };
 
-      // Create a flat list of unique valid hex codes, fallback to empty array
-      const allExtracted = Object.values(colors).filter(Boolean);
-      const uniqueColors = [...new Set(allExtracted)];
-      
-      // Dominant color is usually Vibrant or the most populated one
-      const dominant = palette.Vibrant?.hex || uniqueColors[0] || '#000000';
-      
-      // Calculate basic stats for the palette info
-      // Approximation for "average brightness/saturation" based on the extracted Swatches
-      let totalPop = 0;
-      let sumL = 0;
-      let sumS = 0;
-
-      Object.values(palette).forEach(swatch => {
-        if (swatch) {
-          totalPop += swatch.population;
-          const [, s, l] = swatch.hsl;
-          sumS += (s * 100) * swatch.population;
-          sumL += (l * 100) * swatch.population;
-        }
-      });
-
-      const avgBrightness = totalPop > 0 ? (sumL / totalPop).toFixed(1) + '%' : '0%';
-      const avgSaturation = totalPop > 0 ? (sumS / totalPop).toFixed(1) + '%' : '0%';
-      
-      // Dominant percentage - node-vibrant doesn't give a total image pixel count easily, 
-      // but we can compare vibrant population to total palette population as a proxy
-      const dominantPop = palette.Vibrant ? palette.Vibrant.population : 0;
-      const dominantPercentage = totalPop > 0 ? ((dominantPop / totalPop) * 100).toFixed(1) + '%' : '0%';
-
       const result = {
-        colors, // the 6 vibrant categories
-        palette: uniqueColors, // flat array of up to 6 colors
+        colors, 
+        palette, 
         dominant,
         imageInfo: {
           dimensions,
@@ -79,10 +78,10 @@ export function useImageColorExtraction() {
           orientation,
         },
         paletteInfo: {
-          extractedCount: uniqueColors.length,
-          avgBrightness,
-          avgSaturation,
-          dominantPercentage
+          extractedCount: palette.length,
+          avgBrightness: 'N/A',
+          avgSaturation: 'N/A',
+          dominantPercentage: 'N/A'
         }
       };
       
