@@ -29,7 +29,7 @@ export function useImageColorExtraction() {
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
       // Limit size to maintain performance while gathering enough pixel data
-      const MAX_DIMENSION = 150;
+      const MAX_DIMENSION = 200;
       let scale = 1;
       if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
           scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height);
@@ -44,14 +44,14 @@ export function useImageColorExtraction() {
       const colorMap = new Map();
       let totalPixels = 0;
 
-      // Group into coarse buckets to find base colors
+      // Group into tighter buckets to find base colors and avoid randomness
       for (let i = 0; i < data.length; i += 16) {
         if (data[i+3] < 128) continue; // ignore transparent
 
-        // Slightly looser bucketing for better grouping
-        const r = Math.round(data[i] / 20) * 20;
-        const g = Math.round(data[i+1] / 20) * 20;
-        const b = Math.round(data[i+2] / 20) * 20;
+        // Group by 10s to find strong clusters of similar colors
+        const r = Math.round(data[i] / 10) * 10;
+        const g = Math.round(data[i+1] / 10) * 10;
+        const b = Math.round(data[i+2] / 10) * 10;
 
         const rgb = `${r},${g},${b}`;
         colorMap.set(rgb, (colorMap.get(rgb) || 0) + 1);
@@ -63,10 +63,13 @@ export function useImageColorExtraction() {
         const [r, g, b] = rgbStr.split(',').map(Number);
         const { h, s, l } = rgbToHsl(r, g, b);
 
-        // Weigh by count, but boost highly saturated, non-extreme light/dark colors
+        // Only accept colors that have some significance in the image (ignore noise)
+        if (count < (totalPixels * 0.005)) continue;
+
+        // Weigh by count, boost saturated colors slightly so they don't get lost in grays
         let saturationBoost = 1;
-        if (s > 30 && l > 15 && l < 85) {
-            saturationBoost = 1 + (s / 100) * 3;
+        if (s > 20 && l > 10 && l < 90) {
+            saturationBoost = 1 + (s / 100);
         }
 
         const score = count * saturationBoost;
@@ -78,19 +81,18 @@ export function useImageColorExtraction() {
 
       const uniqueColors = [];
 
-      // Select colors ensuring they are visually distinct
+      // Select colors ensuring they are visually distinct (Euclidean distance)
       for (const c of colorScores) {
         let isDistinct = true;
         for (const u of uniqueColors) {
-          // Calculate Euclidean distance in RGB space
           const diff = Math.sqrt(
             Math.pow(c.r - u.r, 2) +
             Math.pow(c.g - u.g, 2) +
             Math.pow(c.b - u.b, 2)
           );
 
-          // Require a minimum distance between chosen colors
-          if (diff < 65) {
+          // Require a minimum distance between chosen colors (avoiding similar shades)
+          if (diff < 45) {
             isDistinct = false;
             break;
           }
@@ -101,7 +103,7 @@ export function useImageColorExtraction() {
         }
       }
 
-      // If we couldn't find 8 distinct colors, relax the constraint and fill the rest
+      // If we couldn't find 8 distinct colors, relax the constraint
       if (uniqueColors.length < 8) {
           for (const c of colorScores) {
               if (uniqueColors.length >= 8) break;
@@ -118,33 +120,14 @@ export function useImageColorExtraction() {
       const dominant = rgbToHex(byCount[0].r, byCount[0].g, byCount[0].b);
       const dominantPercentage = ((byCount[0].count / totalPixels) * 100).toFixed(1) + '%';
 
-      // Sort final palette by luminance to look nice
+      // Sort final palette by luminance
       uniqueColors.sort((a, b) => b.l - a.l);
       const palette = uniqueColors.map(c => rgbToHex(c.r, c.g, c.b));
-
-      // Attempt to map typical categories
-      let vibrantColor, mutedColor, darkVibrant, lightVibrant;
-
-      const sortedBySat = [...uniqueColors].sort((a, b) => b.s - a.s);
-      vibrantColor = sortedBySat.find(c => c.s > 40 && c.l > 25 && c.l < 75) || sortedBySat[0];
-      mutedColor = [...uniqueColors].sort((a, b) => a.s - b.s).find(c => c.s < 30 && c.l > 30 && c.l < 70) || uniqueColors[uniqueColors.length-1];
-      lightVibrant = sortedBySat.find(c => c.l > 60) || vibrantColor;
-      darkVibrant = sortedBySat.find(c => c.l < 40) || uniqueColors[uniqueColors.length-1];
-
-      const colors = {
-        Vibrant: vibrantColor ? rgbToHex(vibrantColor.r, vibrantColor.g, vibrantColor.b) : dominant,
-        Muted: mutedColor ? rgbToHex(mutedColor.r, mutedColor.g, mutedColor.b) : dominant,
-        DarkVibrant: darkVibrant ? rgbToHex(darkVibrant.r, darkVibrant.g, darkVibrant.b) : palette[palette.length - 1] || dominant,
-        DarkMuted: palette[palette.length - 2] || dominant,
-        LightVibrant: lightVibrant ? rgbToHex(lightVibrant.r, lightVibrant.g, lightVibrant.b) : palette[0] || dominant,
-        LightMuted: palette[1] || dominant,
-      };
 
       const avgS = uniqueColors.reduce((sum, c) => sum + c.s, 0) / uniqueColors.length;
       const avgL = uniqueColors.reduce((sum, c) => sum + c.l, 0) / uniqueColors.length;
 
       const result = {
-        colors,
         palette,
         dominant,
         imageInfo: { dimensions, aspectRatio, resolution, fileSize, orientation },

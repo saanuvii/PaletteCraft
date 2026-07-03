@@ -55,7 +55,7 @@ export function ExportPanel({ colors }) {
         ctx.fill();
 
         // Text
-        ctx.fillStyle = '#333333';
+        ctx.fillStyle = '#18181b';
         ctx.font = 'bold 18px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(hex.toUpperCase(), x + (swatchWidth / 2), y + swatchHeight - 15);
@@ -88,30 +88,30 @@ export function ExportPanel({ colors }) {
 
   return (
     <div className="glass-panel rounded-3xl p-8">
-      <h3 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center gap-3">
-        <Code size={24} className="text-blue-500" /> Export Code & Assets
+      <h3 className="text-2xl font-bold mb-6 text-zinc-800 dark:text-zinc-100 flex items-center gap-3">
+        <Code size={24} className="text-zinc-800 dark:text-zinc-200" /> Export Code & Assets
       </h3>
 
       <div className="flex flex-col xl:flex-row gap-8">
         <div className="flex-1 space-y-4">
-          <div className="flex gap-2 overflow-x-auto pb-2 border-b border-gray-200 dark:border-gray-700/50">
+          <div className="flex gap-2 overflow-x-auto pb-2 border-b border-zinc-200 dark:border-zinc-800/80">
             {['css', 'tailwind', 'scss', 'json'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all border-b-2 ${activeTab === tab ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 rounded-t-lg' : 'border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'}`}
+                className={`px-5 py-2.5 text-sm font-semibold whitespace-nowrap transition-all border-b-2 ${activeTab === tab ? 'border-zinc-800 dark:border-zinc-200 text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-t-lg' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}
               >
                 {tab.toUpperCase()}
               </button>
             ))}
           </div>
           <div className="relative group">
-            <pre className="bg-white/50 dark:bg-black/50 p-6 rounded-2xl text-sm font-mono text-gray-800 dark:text-gray-300 overflow-x-auto shadow-inner border border-gray-200/50 dark:border-gray-700/50">
+            <pre className="bg-white/50 dark:bg-black/50 p-6 rounded-2xl text-sm font-mono text-zinc-800 dark:text-zinc-300 overflow-x-auto shadow-inner border border-zinc-200/50 dark:border-zinc-700/50">
               <code>{contentMap[activeTab]}</code>
             </pre>
             <button
               onClick={handleCopy}
-              className="absolute top-4 right-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition-colors opacity-0 group-hover:opacity-100 font-medium text-sm"
+              className="absolute top-4 right-4 px-4 py-2 bg-zinc-800 hover:bg-zinc-900 dark:bg-zinc-200 dark:hover:bg-white text-white dark:text-zinc-900 rounded-lg shadow-md transition-colors opacity-0 group-hover:opacity-100 font-medium text-sm"
             >
               Copy Code
             </button>
@@ -119,33 +119,33 @@ export function ExportPanel({ colors }) {
         </div>
 
         <div className="w-full xl:w-72 space-y-3">
-          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Downloads</h4>
+          <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Downloads</h4>
           <button onClick={handleDownloadImage} className="w-full group flex items-center gap-4 p-4 rounded-2xl glass-card text-left">
-            <div className="p-2.5 bg-blue-100 dark:bg-blue-900/50 rounded-xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform"><ImageIcon size={20} /></div>
+            <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 group-hover:scale-110 transition-transform border border-zinc-200 dark:border-zinc-700"><ImageIcon size={20} /></div>
             <div>
-              <div className="font-bold text-sm text-gray-800 dark:text-gray-100">PNG Image</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">High-res visual layout</div>
+              <div className="font-bold text-sm text-zinc-800 dark:text-zinc-100">PNG Image</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">High-res visual layout</div>
             </div>
           </button>
           <button onClick={() => handleDownloadFile('svg')} className="w-full group flex items-center gap-4 p-4 rounded-2xl glass-card text-left">
-            <div className="p-2.5 bg-purple-100 dark:bg-purple-900/50 rounded-xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform"><ImageIcon size={20} /></div>
+            <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 group-hover:scale-110 transition-transform border border-zinc-200 dark:border-zinc-700"><ImageIcon size={20} /></div>
             <div>
-              <div className="font-bold text-sm text-gray-800 dark:text-gray-100">SVG Vector</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Scalable graphics</div>
+              <div className="font-bold text-sm text-zinc-800 dark:text-zinc-100">SVG Vector</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Scalable graphics</div>
             </div>
           </button>
           <button onClick={() => handleDownloadFile('json')} className="w-full group flex items-center gap-4 p-4 rounded-2xl glass-card text-left">
-            <div className="p-2.5 bg-yellow-100 dark:bg-yellow-900/50 rounded-xl text-yellow-600 dark:text-yellow-400 group-hover:scale-110 transition-transform"><FileJson size={20} /></div>
+            <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 group-hover:scale-110 transition-transform border border-zinc-200 dark:border-zinc-700"><FileJson size={20} /></div>
             <div>
-              <div className="font-bold text-sm text-gray-800 dark:text-gray-100">JSON Data</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">For developers</div>
+              <div className="font-bold text-sm text-zinc-800 dark:text-zinc-100">JSON Data</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">For developers</div>
             </div>
           </button>
           <button onClick={() => handleDownloadFile('txt')} className="w-full group flex items-center gap-4 p-4 rounded-2xl glass-card text-left">
-            <div className="p-2.5 bg-gray-200 dark:bg-gray-700 rounded-xl text-gray-600 dark:text-gray-300 group-hover:scale-110 transition-transform"><FileText size={20} /></div>
+            <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-zinc-700 dark:text-zinc-300 group-hover:scale-110 transition-transform border border-zinc-200 dark:border-zinc-700"><FileText size={20} /></div>
             <div>
-              <div className="font-bold text-sm text-gray-800 dark:text-gray-100">TXT File</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Simple text list</div>
+              <div className="font-bold text-sm text-zinc-800 dark:text-zinc-100">TXT File</div>
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Simple text list</div>
             </div>
           </button>
         </div>
