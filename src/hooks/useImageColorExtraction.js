@@ -113,7 +113,6 @@ export function useImageColorExtraction() {
         if (c.l < 35 && c.s > lowestL_S) { lowestL_S = c.s; darkVibrant = c; }
       });
 
-      const fallback = uniqueColors[0];
       const colors = {
         Vibrant: vibrantColor ? rgbToHex(vibrantColor.r, vibrantColor.g, vibrantColor.b) : dominant,
         Muted: mutedColor ? rgbToHex(mutedColor.r, mutedColor.g, mutedColor.b) : dominant,
