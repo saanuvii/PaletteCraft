@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 
 export function useLocalStorage(key, initialValue) {
+  // Use a lazy initializer for state to avoid hydration mismatch 
+  // but ensure we read from localStorage correctly.
   const [storedValue, setStoredValue] = useState(() => {
+    if (typeof window === 'undefined') {
+      return initialValue;
+    }
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
