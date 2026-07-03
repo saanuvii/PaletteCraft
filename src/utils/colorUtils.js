@@ -1,5 +1,3 @@
-// colorUtils.js
-
 export const hexToRgb = (hex) => {
   let r = 0, g = 0, b = 0;
   if (hex.length === 4) {
@@ -129,7 +127,7 @@ export const generateHarmonies = (hex) => {
   const { h, s, l } = rgbToHsl(r, g, b);
 
   const getHexFromHsl = (hue, sat, lit) => {
-    const hueNormalized = (hue + 360) % 360;
+    const hueNormalized = ((hue % 360) + 360) % 360; // ensure positive hue
     const { r: r2, g: g2, b: b2 } = hslToRgb(hueNormalized, sat, lit);
     return rgbToHex(r2, g2, b2);
   };
@@ -140,11 +138,11 @@ export const generateHarmonies = (hex) => {
     triadic: [hex, getHexFromHsl(h + 120, s, l), getHexFromHsl(h + 240, s, l)],
     splitComplementary: [hex, getHexFromHsl(h + 150, s, l), getHexFromHsl(h + 210, s, l)],
     monochromatic: [
-      getHexFromHsl(h, s, Math.min(l + 30, 100)),
-      getHexFromHsl(h, s, Math.min(l + 15, 100)),
+      getHexFromHsl(h, s, Math.min(l + 30, 95)),
+      getHexFromHsl(h, s, Math.min(l + 15, 80)),
       hex,
-      getHexFromHsl(h, s, Math.max(l - 15, 0)),
-      getHexFromHsl(h, s, Math.max(l - 30, 0))
+      getHexFromHsl(h, s, Math.max(l - 15, 20)),
+      getHexFromHsl(h, s, Math.max(l - 30, 5))
     ],
     tetradic: [hex, getHexFromHsl(h + 90, s, l), getHexFromHsl(h + 180, s, l), getHexFromHsl(h + 270, s, l)]
   };
